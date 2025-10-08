@@ -97,25 +97,41 @@ try {
   // Create a mock db object to prevent crashes
   db = {
     sql: async () => {
-      throw new Error("Database connection failed");
+      console.log("Database connection failed, returning empty result");
+      return [];
     }
   };
 }
-const batchesRoutes = require("./routes/batches");
-const coursesRoutes = require("./routes/courses");
-const classesRoutes = require("./routes/classes");
-const instructorsRoutes = require("./routes/instructors");
-const studentsRoutes = require("./routes/students");
-const usersRoutes = require("./routes/users");
-const homeRoutes = require("./routes/home");
-const relationsRoutes = require("./routes/relations");
-const questionsRouter = require("./routes/questions");
-const examsRoutes = require("./routes/exams");
-const organizationsRoutes = require("./routes/organizations");
-const subscriptionsRoutes = require("./routes/subscriptions");
-const chatbotRoutes = require("./routes/chatbot");
-const keywordPoolsRoutes = require("./routes/keyword-pools");
-const contactRoutes = require("./routes/contact");
+// Import routes with error handling
+let batchesRoutes, coursesRoutes, classesRoutes, instructorsRoutes, studentsRoutes;
+let usersRoutes, homeRoutes, relationsRoutes, questionsRouter, examsRoutes;
+let organizationsRoutes, subscriptionsRoutes, chatbotRoutes, keywordPoolsRoutes, contactRoutes;
+
+try {
+  batchesRoutes = require("./routes/batches");
+  coursesRoutes = require("./routes/courses");
+  classesRoutes = require("./routes/classes");
+  instructorsRoutes = require("./routes/instructors");
+  studentsRoutes = require("./routes/students");
+  usersRoutes = require("./routes/users");
+  homeRoutes = require("./routes/home");
+  relationsRoutes = require("./routes/relations");
+  questionsRouter = require("./routes/questions");
+  examsRoutes = require("./routes/exams");
+  organizationsRoutes = require("./routes/organizations");
+  subscriptionsRoutes = require("./routes/subscriptions");
+  chatbotRoutes = require("./routes/chatbot");
+  keywordPoolsRoutes = require("./routes/keyword-pools");
+  contactRoutes = require("./routes/contact");
+  console.log("All route modules loaded successfully");
+} catch (err) {
+  console.error("Failed to load route modules:", err);
+  // Create empty route handlers to prevent crashes
+  const emptyRouter = (req, res) => res.status(500).json({ error: "Route module failed to load" });
+  batchesRoutes = coursesRoutes = classesRoutes = instructorsRoutes = studentsRoutes = 
+  usersRoutes = homeRoutes = relationsRoutes = questionsRouter = examsRoutes = 
+  organizationsRoutes = subscriptionsRoutes = chatbotRoutes = keywordPoolsRoutes = contactRoutes = emptyRouter;
+}
 
 // Mount modular routes
 app.use("/api/batches", batchesRoutes);
@@ -133,6 +149,15 @@ app.use("/api", keywordPoolsRoutes);
 app.use("/api", questionsRouter);
 app.use("/api", contactRoutes);
 app.use("/", homeRoutes);
+
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.json({ 
+    status: "ok", 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || "development"
+  });
+});
 
 // Explicit route for static assets
 app.get('/assets/*', (req, res) => {

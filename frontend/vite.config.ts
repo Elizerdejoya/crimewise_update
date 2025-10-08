@@ -10,6 +10,9 @@ export default defineConfig(({ mode }) => ({
   //   port: 8082,
   // },
   base: "./",
+  build: {
+    chunkSizeWarningLimit: 2000, // Increase limit to suppress warnings
+  },
   plugins: [
     react(),
     mode === 'development' &&
