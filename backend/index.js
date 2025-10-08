@@ -55,9 +55,21 @@ const frontendPath = path.join(__dirname, "../frontend/dist");
 console.log("Frontend path:", frontendPath);
 console.log("Frontend path exists:", require('fs').existsSync(frontendPath));
 
+// Debug: List files in dist directory
+if (require('fs').existsSync(frontendPath)) {
+  const files = require('fs').readdirSync(frontendPath);
+  console.log("Files in dist:", files);
+  const assetsDir = path.join(frontendPath, 'assets');
+  if (require('fs').existsSync(assetsDir)) {
+    const assetFiles = require('fs').readdirSync(assetsDir);
+    console.log("Files in assets:", assetFiles);
+  }
+}
+
 // Serve static files with proper headers - this must come before ALL other routes
 app.use(express.static(frontendPath, {
   setHeaders: (res, path) => {
+    console.log("Serving static file:", path);
     if (path.endsWith('.css')) {
       res.setHeader('Content-Type', 'text/css');
     } else if (path.endsWith('.js')) {
@@ -101,8 +113,22 @@ app.use("/api", questionsRouter);
 app.use("/api", contactRoutes);
 app.use("/", homeRoutes);
 
+// Explicit route for static assets
+app.get('/assets/*', (req, res) => {
+  const filePath = path.join(frontendPath, req.path);
+  console.log("Attempting to serve asset:", filePath);
+  console.log("Asset exists:", require('fs').existsSync(filePath));
+  
+  if (require('fs').existsSync(filePath)) {
+    res.sendFile(filePath);
+  } else {
+    console.log("Asset not found:", filePath);
+    res.status(404).send('File not found');
+  }
+});
+
 // Handle React Router (return `index.html` for non-API routes)
-app.get(/^(?!\/api).*/, (req, res) => {
+app.get(/^(?!\/api)(?!\/assets).*/, (req, res) => {
   res.sendFile(path.join(frontendPath, "index.html"));
 });
 
