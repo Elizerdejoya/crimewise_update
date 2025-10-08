@@ -85,10 +85,13 @@ app.use("/api", questionsRouter);
 app.use("/api", contactRoutes);
 app.use("/", homeRoutes);
 
-app.use(express.static(path.join(__dirname, "../frontend/dist")));
+// Serve static files from the frontend dist directory
+const frontendPath = path.join(__dirname, "../frontend/dist");
+app.use(express.static(frontendPath));
 
-app.get(/(.*)/, (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/dist", "index.html"));
+// Handle React Router (return `index.html` for non-API routes)
+app.get(/^(?!\/api).*/, (req, res) => {
+  res.sendFile(path.join(frontendPath, "index.html"));
 });
 
 app.listen(PORT, () => {

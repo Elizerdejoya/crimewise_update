@@ -1,0 +1,12 @@
+{
+  "name": "crimewise-system",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "dev": "concurrently \"cd backend && npm run start\" \"cd frontend && npm run dev\"",
+    "install-deps": "cd backend && npm install && cd ../frontend && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
