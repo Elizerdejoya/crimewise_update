@@ -59,8 +59,21 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
-// Backend is now API-only - static files are served by Vercel
-console.log("Backend starting as API-only server");
+// Serve static files from the frontend dist directory
+const frontendPath = path.join(__dirname, "../frontend/dist");
+console.log("Frontend path:", frontendPath);
+console.log("Frontend path exists:", require('fs').existsSync(frontendPath));
+
+// Serve static files with proper headers
+app.use(express.static(frontendPath, {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.css')) {
+      res.setHeader('Content-Type', 'text/css');
+    } else if (path.endsWith('.js')) {
+      res.setHeader('Content-Type', 'application/javascript');
+    }
+  }
+}));
 
 // Modularized database and routes
 let db;
@@ -133,6 +146,29 @@ app.get("/api/health", (req, res) => {
     environment: process.env.NODE_ENV || "development",
     service: "backend-api"
   });
+});
+
+// Handle React Router - serve index.html for non-API routes
+app.get(/^(?!\/api).*/, (req, res) => {
+  const indexPath = path.join(frontendPath, "index.html");
+  console.log("Serving index.html from:", indexPath);
+  console.log("Index.html exists:", require('fs').existsSync(indexPath));
+  
+  if (require('fs').existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    console.error("index.html not found at:", indexPath);
+    res.status(404).send(`
+      <html>
+        <body>
+          <h1>Frontend not found</h1>
+          <p>Frontend path: ${frontendPath}</p>
+          <p>Index path: ${indexPath}</p>
+          <p>Path exists: ${require('fs').existsSync(indexPath)}</p>
+        </body>
+      </html>
+    `);
+  }
 });
 
 app.listen(PORT, () => {
