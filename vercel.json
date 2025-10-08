@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "cd backend && npm run build",
+  "buildCommand": "npm install && npm run build",
   "builds": [
     {
       "src": "backend/index.js",

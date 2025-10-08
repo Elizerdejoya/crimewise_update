@@ -50,6 +50,22 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
+// Serve static files from the frontend dist directory FIRST - before any routes
+const frontendPath = path.join(__dirname, "../frontend/dist");
+console.log("Frontend path:", frontendPath);
+console.log("Frontend path exists:", require('fs').existsSync(frontendPath));
+
+// Serve static files with proper headers - this must come before ALL other routes
+app.use(express.static(frontendPath, {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.css')) {
+      res.setHeader('Content-Type', 'text/css');
+    } else if (path.endsWith('.js')) {
+      res.setHeader('Content-Type', 'application/javascript');
+    }
+  }
+}));
+
 // Modularized database and routes
 const db = require("./db");
 const batchesRoutes = require("./routes/batches");
@@ -84,22 +100,6 @@ app.use("/api", keywordPoolsRoutes);
 app.use("/api", questionsRouter);
 app.use("/api", contactRoutes);
 app.use("/", homeRoutes);
-
-// Serve static files from the frontend dist directory
-const frontendPath = path.join(__dirname, "../frontend/dist");
-console.log("Frontend path:", frontendPath);
-console.log("Frontend path exists:", require('fs').existsSync(frontendPath));
-
-// Serve static files with proper headers
-app.use(express.static(frontendPath, {
-  setHeaders: (res, path) => {
-    if (path.endsWith('.css')) {
-      res.setHeader('Content-Type', 'text/css');
-    } else if (path.endsWith('.js')) {
-      res.setHeader('Content-Type', 'application/javascript');
-    }
-  }
-}));
 
 // Handle React Router (return `index.html` for non-API routes)
 app.get(/^(?!\/api).*/, (req, res) => {
