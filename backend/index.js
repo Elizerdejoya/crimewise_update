@@ -87,7 +87,19 @@ app.use("/", homeRoutes);
 
 // Serve static files from the frontend dist directory
 const frontendPath = path.join(__dirname, "../frontend/dist");
-app.use(express.static(frontendPath));
+console.log("Frontend path:", frontendPath);
+console.log("Frontend path exists:", require('fs').existsSync(frontendPath));
+
+// Serve static files with proper headers
+app.use(express.static(frontendPath, {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.css')) {
+      res.setHeader('Content-Type', 'text/css');
+    } else if (path.endsWith('.js')) {
+      res.setHeader('Content-Type', 'application/javascript');
+    }
+  }
+}));
 
 // Handle React Router (return `index.html` for non-API routes)
 app.get(/^(?!\/api).*/, (req, res) => {
