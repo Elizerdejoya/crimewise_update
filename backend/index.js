@@ -5,6 +5,15 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Add error handling for unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled Promise Rejection:', err);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
+
 // Improved CORS configuration to handle redirects
 const corsOptions = {
   origin: function (origin, callback) {
@@ -79,7 +88,19 @@ app.use(express.static(frontendPath, {
 }));
 
 // Modularized database and routes
-const db = require("./db");
+let db;
+try {
+  db = require("./db");
+  console.log("Database module loaded successfully");
+} catch (err) {
+  console.error("Failed to load database module:", err);
+  // Create a mock db object to prevent crashes
+  db = {
+    sql: async () => {
+      throw new Error("Database connection failed");
+    }
+  };
+}
 const batchesRoutes = require("./routes/batches");
 const coursesRoutes = require("./routes/courses");
 const classesRoutes = require("./routes/classes");

@@ -186,12 +186,15 @@ async function initializeSchema() {
       "Error initializing SQLite Cloud database schema:",
       err.message
     );
-    // Exit or handle error appropriately if schema initialization fails
-    process.exit(1);
+    // Don't exit in serverless environment - just log the error
+    throw err;
   }
 }
 
 // Call the async function to initialize the schema
-initializeSchema();
+initializeSchema().catch(err => {
+  console.error("Database initialization failed:", err);
+  // Don't exit in serverless environment - let the function continue
+});
 
 module.exports = db;
