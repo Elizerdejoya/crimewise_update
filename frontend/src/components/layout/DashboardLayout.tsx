@@ -191,6 +191,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       </div>
     </div>
   );
-}
+};
 
 export default DashboardLayout;
